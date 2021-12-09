@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "356902715687",
+    "project_id": "kurs3-chat-app",
+    "storage_bucket": "kurs3-chat-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:356902715687:android:3c6201d19391c96fc3a902",
+        "android_client_info": {
+          "package_name": "com.example.kurs3_sabak9"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "356902715687-qm0sio4kv5flk39djro5gejkto85sg7s.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kurs3_sabak9",
+            "certificate_hash": "32698765cc46cb0ed1fba850e8c94afb11ab77a5"
+          }
+        },
+        {
+          "client_id": "356902715687-38vim9lr60c2cjmnstgo2vu7uvt0vfot.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoR1sV8v6WjKzI2CqR6a966ZGhiUfl5bc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "356902715687-38vim9lr60c2cjmnstgo2vu7uvt0vfot.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
