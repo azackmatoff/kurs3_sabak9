@@ -1,6 +1,12 @@
+import 'dart:developer';
+
+import 'package:uuid/uuid.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kurs3_sabak9/chat_page.dart';
+import 'package:kurs3_sabak9/models/user_model.dart';
 import 'package:kurs3_sabak9/widgets/custom_button.dart';
 
 import 'login_page.dart';
@@ -16,6 +22,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -142,9 +149,54 @@ class _RegisterPageState extends State<RegisterPage> {
       UserCredential userCredential = await firebaseAuth
           .createUserWithEmailAndPassword(email: email, password: password);
 
-      if (userCredential != null) {
-        Navigator.pushNamed(context, ChatPage.id);
-      }
+      /// Future, birok then versiyasy
+      ///  UserCredential userCred;
+      // firebaseAuth
+      //     .createUserWithEmailAndPassword(email: email, password: password)
+      //     .then((value) => userCred = value);
+
+      final User _user = userCredential.user;
+      UserModel _userModel;
+
+      var uuid = Uuid();
+
+      final _newUserID =
+          uuid.v1(); // -> "710b962e-041c-11e1-9234-0123456789ab";
+
+      log('uuidValue =====> $_newUserID'); // -> '710b962e-041c-11e1-9234-0123456789ab'
+
+      CollectionReference userCollection = firestore.collection('users');
+
+      /// Create user and add to database
+      userCollection.doc(_newUserID).set({
+        'displayName': _user.displayName,
+        'email': _user.email,
+        'userId': _newUserID,
+      }).then((_) async {
+        /// Get newly created user
+        final docSnapshot = await userCollection.doc(_newUserID).get();
+
+        if (docSnapshot.exists) {
+          final _data = docSnapshot.data() as Map<String, dynamic>;
+
+          _userModel = UserModel.fromJson(_data, _newUserID);
+
+          log('_userModel =====> $_userModel');
+        }
+
+        /// Usermodel null emes bolso, chatpage ke jibergenche ach
+        if (_userModel != null) {
+          // Navigator.pushNamed(context, ChatPage.id);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatPage(
+                userModel: _userModel,
+              ),
+            ),
+          );
+        }
+      });
 
       setState(() {
         isClicked = false;
