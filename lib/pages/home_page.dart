@@ -1,14 +1,16 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
-import 'package:kurs3_sabak9/chat_page.dart';
-import 'package:kurs3_sabak9/login_page.dart';
-import 'package:kurs3_sabak9/register_page.dart';
+import 'package:kurs3_sabak9/app_constants/app_constants.dart';
+import 'package:kurs3_sabak9/app_constants/app_global_assets.dart';
+
+import 'login_page.dart';
+import 'register_page.dart';
 import 'package:kurs3_sabak9/widgets/custom_button.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
 
-  static const String id = 'home';
+  static const String id = AppConstants.home;
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -78,10 +80,7 @@ class _HomePageState extends State<HomePage>
             const SizedBox(height: 54.0),
             Hero(
               tag: 'logo',
-              child: Image.asset(
-                'assets/images/logo.png',
-                height: 150.0,
-              ),
+              child: AppGlobalAssets.imageLogo(150.0),
             ),
             const SizedBox(height: 54.0),
             CustomButton(

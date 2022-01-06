@@ -1,8 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:kurs3_sabak9/constants.dart';
+import 'package:kurs3_sabak9/app_constants/app_constants.dart';
+import 'package:kurs3_sabak9/app_constants/constants.dart';
+
 import 'package:kurs3_sabak9/models/user_model.dart';
+import 'package:kurs3_sabak9/pages/home_page.dart';
 
 final _firestore = FirebaseFirestore.instance;
 
@@ -12,7 +15,7 @@ class ChatPage extends StatefulWidget {
     Key key,
   }) : super(key: key);
 
-  static const String id = 'chat';
+  static const String id = AppConstants.chat;
 
   final UserModel userModel;
 
@@ -35,7 +38,7 @@ class _ChatPageState extends State<ChatPage> {
               icon: Icon(Icons.close),
               onPressed: () {
                 _auth.signOut();
-                Navigator.pop(context);
+                Navigator.pushNamed(context, HomePage.id);
               }),
         ],
         title: Text('⚡️Chat'),
@@ -65,13 +68,13 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   FlatButton(
                     onPressed: () async {
-                      // messageTextController.clear();
-                      // await _firestore.collection('messages').add({
-                      //   'text': messageText,
-                      //   'senderID': loggedInUser.uid,
-                      //   'senderEmail': loggedInUser.email,
-                      //   'created_at': FieldValue.serverTimestamp(),
-                      // });
+                      messageTextController.clear();
+                      await _firestore.collection('chats').add({
+                        'text': messageText,
+                        'senderID': widget.userModel.userId,
+                        'senderEmail': widget.userModel.email,
+                        'created_at': FieldValue.serverTimestamp(),
+                      });
                     },
                     child: Text(
                       'Send',
@@ -98,7 +101,7 @@ class MessagesStream extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: _firestore
-          .collection('messages')
+          .collection('chats')
           .orderBy('created_at', descending: false)
           .snapshots(),
       builder: (context, snapshot) {
@@ -111,11 +114,12 @@ class MessagesStream extends StatelessWidget {
         }
         final messages = snapshot.data.docs.reversed;
         List<MessageBubble> messageBubbles = [];
+
         for (var message in messages) {
-          final m = message.data() as Map<String, dynamic>;
-          final messageText = m['text'];
-          final messageSenderID = m['senderID'];
-          final messageSenderEmail = m['senderEmail'];
+          final messageData = message.data() as Map<String, dynamic>;
+          final messageText = messageData['text'];
+          final messageSenderID = messageData['senderID'];
+          final messageSenderEmail = messageData['senderEmail'];
 
           final messageBubble = MessageBubble(
             sednerID: messageSenderID,
@@ -161,6 +165,7 @@ class MessageBubble extends StatelessWidget {
               color: Colors.black54,
             ),
           ),
+          const SizedBox(height: 3),
           Material(
             borderRadius: isMe
                 ? BorderRadius.only(

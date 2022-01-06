@@ -1,11 +1,10 @@
 import 'dart:developer';
 
-import 'package:uuid/uuid.dart';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:kurs3_sabak9/chat_page.dart';
+import 'package:kurs3_sabak9/app_constants/app_constants.dart';
+import 'chat_page.dart';
 import 'package:kurs3_sabak9/models/user_model.dart';
 import 'package:kurs3_sabak9/widgets/custom_button.dart';
 
@@ -14,7 +13,7 @@ import 'login_page.dart';
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key key}) : super(key: key);
 
-  static const String id = 'register';
+  static const String id = AppConstants.register;
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -158,28 +157,28 @@ class _RegisterPageState extends State<RegisterPage> {
       final User _user = userCredential.user;
       UserModel _userModel;
 
-      var uuid = Uuid();
-
-      final _newUserID =
-          uuid.v1(); // -> "710b962e-041c-11e1-9234-0123456789ab";
-
-      log('uuidValue =====> $_newUserID'); // -> '710b962e-041c-11e1-9234-0123456789ab'
+      /// START
+      /// Jani user id jasoonun bir jolu
+      // var uuid = Uuid();
+      // final _newUserID =
+      //     uuid.v1(); // -> "710b962e-041c-11e1-9234-0123456789ab";
+      /// END
 
       CollectionReference userCollection = firestore.collection('users');
 
       /// Create user and add to database
-      userCollection.doc(_newUserID).set({
-        'displayName': _user.displayName,
+      userCollection.doc(_user.uid).set({
+        'displayName': _user.displayName ?? 'Display name',
         'email': _user.email,
-        'userId': _newUserID,
+        'userId': _user.uid,
       }).then((_) async {
         /// Get newly created user
-        final docSnapshot = await userCollection.doc(_newUserID).get();
+        final docSnapshot = await userCollection.doc(_user.uid).get();
 
         if (docSnapshot.exists) {
           final _data = docSnapshot.data() as Map<String, dynamic>;
 
-          _userModel = UserModel.fromJson(_data, _newUserID);
+          _userModel = UserModel.fromJson(_data, _user.uid);
 
           log('_userModel =====> $_userModel');
         }

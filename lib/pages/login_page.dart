@@ -1,12 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:kurs3_sabak9/chat_page.dart';
+import 'package:kurs3_sabak9/app_constants/app_constants.dart';
+import 'package:kurs3_sabak9/app_constants/app_global_assets.dart';
+import 'package:kurs3_sabak9/repositories/login/login_repo.dart';
+
 import 'package:kurs3_sabak9/widgets/custom_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key key}) : super(key: key);
 
-  static const String id = 'login';
+  static const String id = AppConstants.login;
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -14,6 +18,8 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
   final _formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -33,10 +39,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               Hero(
                 tag: 'logo',
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  height: 250.0,
-                ),
+                child: AppGlobalAssets.imageLogo(250.0),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12.0),
@@ -89,11 +92,8 @@ class _LoginPageState extends State<LoginPage> {
                   : CustomButton(
                       onPressed: () async {
                         if (_formKey.currentState.validate()) {
-                          setState(() {
-                            isClicked = true;
-                          });
-                          await loginWithEmail(
-                              emailController.text, passwordController.text);
+                          await loginWithEmail(context, emailController.text,
+                              passwordController.text);
                         }
                       },
                       buttonBorderColor: Colors.amberAccent,
@@ -107,27 +107,20 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> loginWithEmail(String email, String password) async {
-    try {
-      UserCredential userCredential = await firebaseAuth
-          .signInWithEmailAndPassword(email: email, password: password);
+  Future<void> loginWithEmail(
+    BuildContext context,
+    String email,
+    String password,
+  ) async {
+    setState(() {
+      isClicked = true;
+    });
 
-      if (userCredential != null) {
-        Navigator.pushNamed(context, ChatPage.id);
-      }
+    await LoginRepo.loginWithEmail(context, email, password);
 
-      setState(() {
-        isClicked = false;
-      });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
-      }
-    } catch (e) {
-      print(e);
-    }
+    setState(() {
+      isClicked = false;
+    });
   }
 }
 
