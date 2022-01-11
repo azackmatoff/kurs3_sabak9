@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kurs3_sabak9/models/chat_model.dart';
 
 class FirestoreCollections {
   static FirestoreCollections _storageUtil;
@@ -24,4 +25,10 @@ class FirestoreCollections {
 
   static final CollectionReference chatReference =
       _firestore.collection('chats');
+
+  static final CollectionReference chatReferenceNew =
+      _firestore.collection('chats').withConverter<ChatModel>(
+            fromFirestore: (snapshot, _) => ChatModel.fromJson(snapshot.data()),
+            toFirestore: (chatData, _) => chatData.toJson(),
+          );
 }

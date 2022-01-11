@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:kurs3_sabak9/app_constants/app_constants.dart';
 import 'package:kurs3_sabak9/app_constants/app_global_assets.dart';
 import 'package:kurs3_sabak9/repositories/login/login_repo.dart';
+import 'package:kurs3_sabak9/utilities/app_utils/validators/custom_validator.dart';
 
 import 'package:kurs3_sabak9/widgets/custom_button.dart';
 
@@ -55,11 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (val) {
-                    if (!isEmail(val)) {
-                      return 'Э-почтаңызды жазыңыз!';
-                    } else {
-                      return null;
-                    }
+                    return CustomValidator.emailValidator(val);
                   },
                 ),
               ),
@@ -122,14 +119,4 @@ class _LoginPageState extends State<LoginPage> {
       isClicked = false;
     });
   }
-}
-
-/// E-pochtaby je jokbu teksheret
-bool isEmail(String em) {
-  String p =
-      r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-
-  RegExp regExp = RegExp(p);
-
-  return regExp.hasMatch(em);
 }

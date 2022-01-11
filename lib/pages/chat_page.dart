@@ -1,13 +1,11 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kurs3_sabak9/app_constants/app_constants.dart';
 import 'package:kurs3_sabak9/app_constants/constants.dart';
+import 'package:kurs3_sabak9/models/chat_model.dart';
 
 import 'package:kurs3_sabak9/models/user_model.dart';
 import 'package:kurs3_sabak9/pages/home_page.dart';
-
-final _firestore = FirebaseFirestore.instance;
+import 'package:kurs3_sabak9/repositories/chat/chat_repo.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({
@@ -24,7 +22,6 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final _auth = FirebaseAuth.instance;
   final messageTextController = TextEditingController();
   String messageText;
 
@@ -36,8 +33,8 @@ class _ChatPageState extends State<ChatPage> {
         actions: <Widget>[
           IconButton(
               icon: Icon(Icons.close),
-              onPressed: () {
-                _auth.signOut();
+              onPressed: () async {
+                await chatRepo.signOut(context);
                 Navigator.pushNamed(context, HomePage.id);
               }),
         ],
@@ -69,12 +66,9 @@ class _ChatPageState extends State<ChatPage> {
                   FlatButton(
                     onPressed: () async {
                       messageTextController.clear();
-                      await _firestore.collection('chats').add({
-                        'text': messageText,
-                        'senderID': widget.userModel.userId,
-                        'senderEmail': widget.userModel.email,
-                        'created_at': FieldValue.serverTimestamp(),
-                      });
+
+                      await chatRepo.sendChat(
+                          context, messageText, widget.userModel);
                     },
                     child: Text(
                       'Send',
@@ -99,44 +93,39 @@ class MessagesStream extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _firestore
-          .collection('chats')
-          .orderBy('created_at', descending: false)
-          .snapshots(),
-      builder: (context, snapshot) {
+    return StreamBuilder<List<ChatModel>>(
+      stream: chatRepo.streamChat(),
+      builder: (BuildContext context, AsyncSnapshot<List<ChatModel>> snapshot) {
         if (!snapshot.hasData) {
           return Center(
             child: CircularProgressIndicator(
               backgroundColor: Colors.lightBlueAccent,
             ),
           );
-        }
-        final messages = snapshot.data.docs.reversed;
-        List<MessageBubble> messageBubbles = [];
+        } else if (snapshot.hasData) {
+          final chats = snapshot.data.reversed;
+          List<MessageBubble> messageBubbles = <MessageBubble>[];
 
-        for (var message in messages) {
-          final messageData = message.data() as Map<String, dynamic>;
-          final messageText = messageData['text'];
-          final messageSenderID = messageData['senderID'];
-          final messageSenderEmail = messageData['senderEmail'];
+          for (var chat in chats) {
+            final messageBubble = MessageBubble(
+              sednerID: chat.senderID,
+              senderEmail: chat.senderEmail,
+              text: chat.text,
+              isMe: currentUserID == chat.senderID,
+            );
 
-          final messageBubble = MessageBubble(
-            sednerID: messageSenderID,
-            senderEmail: messageSenderEmail,
-            text: messageText,
-            isMe: currentUserID == messageSenderID,
+            messageBubbles.add(messageBubble);
+          }
+          return Expanded(
+            child: ListView(
+              reverse: true,
+              padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
+              children: messageBubbles,
+            ),
           );
-
-          messageBubbles.add(messageBubble);
+        } else {
+          return const SizedBox.shrink();
         }
-        return Expanded(
-          child: ListView(
-            reverse: true,
-            padding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 20.0),
-            children: messageBubbles,
-          ),
-        );
       },
     );
   }
